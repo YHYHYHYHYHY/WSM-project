@@ -7,3 +7,4 @@
 链接地址:https://jbox.sjtu.edu.cn/l/01amJe  
 
  来自于: 陈子啸  
+ ## RankedsSearch.py  中的第23行 root = 'full_env/' 修改访问的文件目录
