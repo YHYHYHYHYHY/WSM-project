@@ -1,4 +1,4 @@
-from mainpage import Ui_SJTU  
+from mainpage import Ui_SJTU  # 导入 uiDemo4.py 中的 Ui_MainWindow 界面类
 from resultpage2 import ResultPage2
 from resultpage1 import ResultPage1
 from QA_sum_page import QA_sum_page
@@ -66,8 +66,8 @@ class PageWindow(QMainWindow, ResultPage2): # Boolean Search Page
             'Full Text': 'target_11',
         }
         pre_body_data = []
-        for score, id in ranked_result:
-            pre_body_data.append([str(id), str(score)])
+        for id in ranked_result:
+            pre_body_data.append(str(id))
         self.table.set_table_init_data(pre_data)
         self.table.set_table_full_data(pre_body_data)
 
@@ -75,8 +75,8 @@ class PageWindow(QMainWindow, ResultPage2): # Boolean Search Page
         if len(self.table.target_table.selectedItems()) <= 0:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '请选择要操作的行',
+                'Warning!',
+                'Please select the row to operate on',
                 QtWidgets.QMessageBox.Yes
             )
             self.FullTextWindow.close()
@@ -111,7 +111,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
 
     def getQA(self):
         question = self.textEdit.toPlainText()
-        res = rank(question)[:5]
+        res = rank(question)[:10]
         for score, id in res:
             body = {
                 "query": {
@@ -121,6 +121,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
                 }
             }
             text = es.search(index="realnewslike_text", body=body)['hits']['hits'][0]['_source']['text']
+            text = gettopsentences(20, text)
             answer = QA(question, text)
             if answer != '<s>':
                 break
@@ -129,7 +130,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
         self.QA_page.show()
     def getsum(self):
         query = self.textEdit.toPlainText()
-        res = rank(query)[:3]
+        res = rank(query)[:10]
         context = ''
         for score, id in res:
             body = {
@@ -140,6 +141,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
                 }
             }
             text = es.search(index="realnewslike_text", body=body)['hits']['hits'][0]['_source']['text']
+            text = gettopsentences(10, text)
             context += text
         if len(nltk.word_tokenize(context)) >= 3700:
             l = len(nltk.word_tokenize(context))
@@ -159,16 +161,16 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
             'Full Text': 'target_11',
         }
         pre_body_data = []
-        for score, id in ranked_result:
-            pre_body_data.append([str(id), str(score)])
+        for id in ranked_result:
+            pre_body_data.append(str(id))
         self.table.set_table_init_data(pre_data)
         self.table.set_table_full_data(pre_body_data)
     def FullText(self):
         if len(self.table.target_table.selectedItems()) <= 0:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '请选择要操作的行',
+                'Warning!',
+                'Please select the row to operate on',
                 QtWidgets.QMessageBox.Yes
             )
             self.FullTextWindow.close()
@@ -206,8 +208,19 @@ class PageWindow3(QMainWindow, FullTextPage): # Full Text Page
     def clickButtonCloseWindow(self):
         self.close()
 
+def gettopsentences(k, text): # Get top k sentences
+    tokens = nltk.word_tokenize(text)
+    sentence = 0
+    end_list = ['.', '?', '!']
+    for i in range(len(tokens)):
+        if tokens[i] in end_list:
+            sentence += 1
+            if sentence >= k:
+                return TreebankWordDetokenizer().detokenize(tokens[:i])
+    return text
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myWin = MainWindow()
 
-    sys.exit(app.exec_())  # 结束进程，退出程序
+    sys.exit(app.exec_())

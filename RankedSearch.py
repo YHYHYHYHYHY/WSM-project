@@ -20,7 +20,7 @@ total_num = 13978838
 
 BYTE_SIZE = 4
 
-root = 'test_env/'
+root = 'full_env/'
 dict_file = codecs.open(root+'dictionary', encoding='utf-8')
 post_file = io.open(root+'postingfile', 'rb')
 freq_file = io.open(root+'frequencyfile', 'rb')
@@ -114,7 +114,8 @@ def rank(query):
 
 
     sorted_score = sorted(zip(score.values(), score.keys()), reverse=True)
-    return sorted_score
+    sorted_id = [id for _, id in sorted_score]
+    return sorted_id
 
 
 #print(len(posting('journey')))

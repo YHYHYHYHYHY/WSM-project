@@ -30,18 +30,18 @@ class PageTableWidget(QtWidgets.QWidget):
         pass
 
     def init_ui(self):
-        pre_page_btn = QtWidgets.QPushButton('上一页')
+        pre_page_btn = QtWidgets.QPushButton('last page')
         pre_page_btn.clicked.connect(self.pre_page_btn_clicked)
-        next_page_btn = QtWidgets.QPushButton('下一页')
+        next_page_btn = QtWidgets.QPushButton('next page')
         next_page_btn.clicked.connect(self.next_page_btn_clicked)
 
-        tip_label_0 = QtWidgets.QLabel('第')
+        tip_label_0 = QtWidgets.QLabel('Page')
         self.witch_page_lineedit = QtWidgets.QLineEdit()
         self.int_validator = QtGui.QIntValidator()
         self.witch_page_lineedit.setValidator(self.int_validator)
         self.witch_page_lineedit.setMaximumWidth(20)
-        tip_label_1 = QtWidgets.QLabel('页')
-        go_page_btn = QtWidgets.QPushButton('前往')
+        tip_label_1 = QtWidgets.QLabel('^')
+        go_page_btn = QtWidgets.QPushButton('Goto')
         go_page_btn.clicked.connect(self.go_page_btn_clicked)
         layout_witch_page = QtWidgets.QHBoxLayout()
         layout_witch_page.addWidget(tip_label_0)
@@ -50,9 +50,9 @@ class PageTableWidget(QtWidgets.QWidget):
         layout_witch_page.addWidget(go_page_btn)
         layout_witch_page.addStretch(1)
 
-        self.total_page_count_label = QtWidgets.QLabel(f"共0页")
-        self.total_rows_count_label = QtWidgets.QLabel(f"共找到0个结果")
-        self.current_page_label = QtWidgets.QLabel(f"当前第0页")
+        self.total_page_count_label = QtWidgets.QLabel(f"0 pages in total |")
+        self.total_rows_count_label = QtWidgets.QLabel(f"0 results found |")
+        self.current_page_label = QtWidgets.QLabel(f"page 0")
         layout_pagestatus = QtWidgets.QHBoxLayout()
         layout_pagestatus.addWidget(self.total_page_count_label)
         layout_pagestatus.addWidget(self.total_rows_count_label)
@@ -93,13 +93,13 @@ class PageTableWidget(QtWidgets.QWidget):
 
         self.int_validator.setRange(1, self.total_page_count)
 
-        self.total_page_count_label.setText(f"共{self.total_page_count}页")
-        self.total_rows_count_label.setText(f"共找到{self.total_rows_count}个结果")
+        self.total_page_count_label.setText(f"{self.total_page_count} pages in total|")
+        self.total_rows_count_label.setText(f"{self.total_rows_count} results found|")
         self.caculate_current_show_data()
         pass
 
     def setting_current_pagestatus_label(self):
-        self.current_page_label.setText(f"当前第{self.current_page}页")
+        self.current_page_label.setText(f"page {self.current_page}")
         pass
 
     def caculate_current_show_data(self):
@@ -114,7 +114,7 @@ class PageTableWidget(QtWidgets.QWidget):
         self.target_table.clearContents()
         self.target_table.setRowCount(len(data))
         for r_i, r_v in enumerate(data):
-            id = r_v[0]
+            id = r_v
             body = {
                 "query": {
                     "term": {
@@ -140,8 +140,8 @@ class PageTableWidget(QtWidgets.QWidget):
         if not input_page:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '请输入要跳转的页码',
+                'Warning!',
+                'Please enter the page number to jump to',
                 QtWidgets.QMessageBox.Yes
             )
             return
@@ -149,8 +149,8 @@ class PageTableWidget(QtWidgets.QWidget):
         if input_page < 0 or input_page > self.total_page_count:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '输入的页码超出范围',
+                'Warning!',
+                'The page number entered is out of range',
                 QtWidgets.QMessageBox.Yes
             )
             return
@@ -162,8 +162,8 @@ class PageTableWidget(QtWidgets.QWidget):
         if self.current_page <= 1:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '已经是首页',
+                'Warning!',
+                'Already on the first page',
                 QtWidgets.QMessageBox.Yes
             )
             return
@@ -175,8 +175,8 @@ class PageTableWidget(QtWidgets.QWidget):
         if self.current_page >= self.total_page_count:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '已经是最后一页',
+                'Warning!',
+                'Already on the last page',
                 QtWidgets.QMessageBox.Yes
             )
             return
@@ -189,16 +189,16 @@ class PageTableWidget(QtWidgets.QWidget):
         if len(selectedItems) <= 0:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '请选择要操作的行',
+                'Warning!',
+                'Please select the row to operate on',
                 QtWidgets.QMessageBox.Yes
             )
             return
         if not self.table_right_menus:
             QtWidgets.QMessageBox.information(
                 self,
-                '提示',
-                '没有右键菜单',
+                'Warning!',
+                'No right-click menu',
                 QtWidgets.QMessageBox.Yes
             )
             return
@@ -212,7 +212,6 @@ class PageTableWidget(QtWidgets.QWidget):
         current_action = menu.exec_(self.target_table.mapToGlobal(pos))
         for item in menu_item_list:
             if item == current_action:
-                # 发出信号
                 action_name = item.text()
                 pre_res_map = {}
                 pre_res_map['action_name'] = action_name
@@ -225,24 +224,4 @@ class PageTableWidget(QtWidgets.QWidget):
         pass
 
     pass
-class Example_widget(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
-        self.init_ui()
-        pass
-    def init_ui(self):
-        self.setWindowTitle('表格显示示例')
-        self.table = PageTableWidget()
-        self.table.sinout_signal.connect(self.table_signal_recive)
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.table)
-        self.setLayout(layout)
-        pass
-    def setting_data(self,data1,data2):
-        self.table.set_table_init_data(data1)
-        self.table.set_table_full_data(data2)
-        pass
-    def table_signal_recive(self,data:Dict[str,Any]):
-        print(data)
-        pass
 
