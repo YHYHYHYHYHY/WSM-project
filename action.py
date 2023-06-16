@@ -1,4 +1,4 @@
-from mainpage import Ui_SJTU  # 导入 uiDemo4.py 中的 Ui_MainWindow 界面类
+from mainpage import Ui_SJTU  
 from resultpage2 import ResultPage2
 from resultpage1 import ResultPage1
 from QA_sum_page import QA_sum_page
