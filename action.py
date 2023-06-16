@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel
-from RankedSearch import rank
+from Search import rank, boolean_search
 from QA_S.summarize_QA import summarize, QA
 from Table import PageTableWidget
 from FullText_page import FullTextPage
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow, Ui_SJTU):
     def get_bool(self):
         query = self.textEdit.toPlainText()
         self.page2.textEdit.setText(query)
-        res = rank(query) # 这里要调Boolean search的接口
+        res = boolean_search(query)
         self.page2.prepare(res)
 
 
@@ -56,10 +56,10 @@ class PageWindow(QMainWindow, ResultPage2): # Boolean Search Page
 
     def search(self):
         query = self.textEdit.toPlainText()
-        res = rank(query) # 这里要调Boolean search的接口
+        res = boolean_search(query)
         self.prepare(res)
 
-    def prepare(self, ranked_result): # 根据Boolean search返回的数据结构重写prepare方法
+    def prepare(self, ranked_result):
         pre_data = {}
         pre_data['headers'] = ['DocID', 'News']
         pre_data['table_right_menus'] = {
@@ -112,7 +112,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
     def getQA(self):
         question = self.textEdit.toPlainText()
         res = rank(question)[:10]
-        for score, id in res:
+        for id in res:
             body = {
                 "query": {
                     "term": {
@@ -132,7 +132,7 @@ class PageWindow1(QMainWindow, ResultPage1): # Ranked Search Page
         query = self.textEdit.toPlainText()
         res = rank(query)[:10]
         context = ''
-        for score, id in res:
+        for id in res:
             body = {
                 "query": {
                     "term": {
